@@ -1,0 +1,56 @@
+trigger: 
+  - main
+  - feature/*
+  - devlop
+pool: Agent_01_Dec2025  
+
+stages:
+  - stage: terraform_init_install
+    displayName: terraform init install
+    jobs:
+      - job: terraform_init_install
+        displayName: terraform init install
+        steps:
+        - task: TerraformInstaller@1
+          inputs:
+            terraformVersion: 'latest'
+        - task: TerraformTask@5
+          displayName: terraform init
+          inputs:
+            provider: 'azurerm'
+            command: 'init'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/Enviroments/Dev'
+            backendServiceArm: 'infra-sc-31march'
+            backendAzureRmStorageAccountName: 'statestg9876567'
+            backendAzureRmContainerName: 'statefile'
+            backendAzureRmKey: 'dev.terraform.tfstate'
+     - stage: Terraform_plan   
+    displayName: Terraform plan
+    jobs:
+      - job: Terraform_plan   
+        displayName: Terraform_plan   
+        steps:
+        - task: TerraformTask@5
+          displayName: Terraform_plan  
+          inputs:
+            provider: 'azurerm'
+            command: 'plan'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/Enviroments/Dev'
+            environmentServiceNameAzureRM: 'infra-sc-31march'
+  - stage: Terraform_Apply 
+    displayName: Terraform_Apply 
+    condition: eq(variables['Build.SourceBranch'], 'refs/heads/main')
+    jobs:
+      - job: Terraform_Apply 
+        displayName: Terraform_Apply 
+        steps:
+        - task: TerraformTask@5
+          displayName: Terraform_Apply
+          inputs:
+            provider: 'azurerm'
+            command: 'apply'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/Enviroments/Dev'
+            environmentServiceNameAzureRM: 'infra-sc-31march'         
+
+            
+
